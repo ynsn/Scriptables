@@ -1,0 +1,14 @@
+{
+    "name": "StackMedia.Scriptables",
+    "rootNamespace": "StackMedia.Scriptables",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
