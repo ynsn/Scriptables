@@ -15,10 +15,7 @@ namespace StackMedia.Scriptables
 
         public IReadOnlyList<ScriptableComponent> Components => components;
 
-        internal void Clear()
-        {
-            components.Clear();
-        }
+        internal void Clear() => components.Clear();
 
         public T AddComponent<T>() where T : ScriptableComponent
         {
@@ -32,9 +29,10 @@ namespace StackMedia.Scriptables
 
         public ScriptableComponent AddComponent(Type type)
         {
-            if (!typeof(ScriptableComponent).IsAssignableFrom(type)) return null;
+            if (type == null || !typeof(ScriptableComponent).IsAssignableFrom(type)) return null;
 
-            var instance = CreateInstance(type) as ScriptableComponent;
+            if (CreateInstance(type) is not ScriptableComponent instance) return null;
+
             instance!.name = type.Name;
             _ = TryAddSubAsset(instance);
             components.Add(instance);
@@ -44,13 +42,12 @@ namespace StackMedia.Scriptables
 
         public T GetComponent<T>() where T : ScriptableComponent
         {
-            var count = components.Count;
-            for (var i = 0; i < count; i++)
+            foreach (ScriptableComponent scriptableComponent in components)
             {
-                ScriptableComponent component = components[i];
-                if (component is T typedComponent) return typedComponent;
-            }
+                if (scriptableComponent is T typedComponent)
+                    return typedComponent;
 
+            }
             return null;
         }
 
@@ -82,7 +79,14 @@ namespace StackMedia.Scriptables
             }
             return null;
         }
-        public T GetComponentAtIndex<T>(int index) where T : ScriptableComponent => throw new NotImplementedException();
+        public T GetComponentAtIndex<T>(int index) where T : ScriptableComponent
+        {
+            if (index < 0 || index >= components.Count) return null;
+            ScriptableComponent component = components[index];
+            if (component is T typedComponent) return typedComponent;
+            return null;
+        }
+        
         public ScriptableComponent GetComponentAtIndex(int index) => throw new NotImplementedException();
         public int GetComponentCount() => throw new NotImplementedException();
         public int GetComponentIndex<T>(T component) where T : ScriptableComponent => throw new NotImplementedException();
