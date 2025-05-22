@@ -3,7 +3,7 @@
   "version": "0.3.1",
   "displayName": "Scriptables",
   "description": "Framework for ScriptableObject-based architecture and development.",
-  "unity": "2022.3",
+  "unity": "6000.0",
   "author": {
     "name": "Stack Media",
     "email": "hello@stackmedia.nl",
