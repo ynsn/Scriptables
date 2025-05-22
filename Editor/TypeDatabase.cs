@@ -1,28 +1,27 @@
 ﻿using System;
-using System.Linq;
-using System.Reflection;
-using UnityEditor;
-using UnityEngine;
+using System.Collections.Generic;
+using StackMedia.Scriptables.Editor.Internal;
 
 namespace StackMedia.Scriptables.Editor
 {
-    public sealed class TypeDatabase
+    
+
+    public static class TypeDatabase
     {
-        [InitializeOnLoadMethod]
-        private static void WOw()
+        public static void AddInterfaceCache(Type interfaceType, Type concreteType)
         {
-            foreach (Type genericAssetType in GetGenericAssetTypes())
+            if (TypeDatabaseAsset.Instance.TypePaths.ContainsKey(interfaceType.AssemblyQualifiedName))
             {
-                Debug.Log(genericAssetType.Name);
+                if (TypeDatabaseAsset.Instance.TypePaths[interfaceType.AssemblyQualifiedName] == null)
+                {
+                    TypeDatabaseAsset.Instance.TypePaths[interfaceType.AssemblyQualifiedName] = new List<string>();
+                }
             }
         }
 
-        public static Type[] GetGenericAssetTypes()
+        public static void Save()
         {
-            TypeCache.TypeCollection types = TypeCache.GetTypesWithAttribute<GenericOrAbstractTypeAttribute>();
-            var filteredTypes = types.Select(x => x).Where(x => x.GetCustomAttribute<CreateAssetMenuAttribute>() != null)
-                .Where(x => x.IsSubclassOf(typeof(ScriptableObject))).ToArray();
-            return filteredTypes;
+            
         }
     }
 }

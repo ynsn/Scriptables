@@ -5,9 +5,9 @@ using Object = UnityEngine.Object;
 namespace StackMedia.Scriptables
 {
     [Serializable]
-    public class SerializedInterface<TInterface, TObject> where TInterface : class where TObject : class
+    public class SerializedInterface<TInterface, TObject> where TObject : Object where TInterface : class
     {
-        [SerializeField, HideInInspector] private TObject value;
+        [SerializeField, HideInInspector] private TObject value = null as TObject;
         
         public TInterface Value
         {
@@ -18,12 +18,13 @@ namespace StackMedia.Scriptables
                 _ => throw new InvalidOperationException($"{value} is not of type {typeof(TInterface)}")
             };
 
-            set => this.value = value switch
+            set => this.value = (value switch
             {
                 null => null,
                 TObject o => o,
-                _ => throw new InvalidOperationException($"{value} is not of type {typeof(TObject)}")
-            };
+                    //  _ => throw new InvalidOperationException($"{value} is not of type {typeof(TObject)}")
+                _ => throw new ArgumentOutOfRangeException(nameof(value), value, null)
+            })!;
         }
 
         public TObject ObjectValue
@@ -41,12 +42,12 @@ namespace StackMedia.Scriptables
         public SerializedInterface(TInterface value) => this.value = value as TObject;
 
         public static implicit operator TInterface(SerializedInterface<TInterface, TObject> serializedInterface) => serializedInterface.Value;
-        public static implicit operator TObject(SerializedInterface<TInterface, TObject> serializedInterface) => serializedInterface.ObjectValue;
+        /*public static implicit operator TObject(SerializedInterface<TInterface, TObject> serializedInterface) => serializedInterface.ObjectValue;
 
         public static implicit operator SerializedInterface<TInterface, TObject>(TInterface type) =>
             new SerializedInterface<TInterface, TObject>(type);
         public static implicit operator SerializedInterface<TInterface, TObject>(TObject type) =>
-            new SerializedInterface<TInterface, TObject>(type);
+            new SerializedInterface<TInterface, TObject>(type);*/
     }
     
     [Serializable]

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using StackMedia.Scriptables.Editor.UI;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
@@ -43,135 +44,8 @@ namespace StackMedia.Scriptables.Editor
     [CustomPropertyDrawer(typeof(SerializedInterface<,>))]
     public class SerializedInterfaceDrawer : PropertyDrawer
     {
-        private class InterfaceDropdown : AdvancedDropdown
-        {
-            private readonly Type interfaceType;
-            private readonly SerializedProperty property;
-
-            public InterfaceDropdown(AdvancedDropdownState state, Type interfaceType, SerializedProperty property) : base(state)
-            {
-                this.interfaceType = interfaceType;
-                this.property = property;
-            }
-
-            protected override AdvancedDropdownItem BuildRoot()
-            {
-                var root = new AdvancedDropdownItem(GetTypeName(interfaceType));
-                root.AddChild(new InterfaceDropdownItem("None"));
-                root.AddChild(BuildAssetsItem());
-                root.AddChild(BuildSceneItem());
-                return root;
-            }
-
-            private AdvancedDropdownItem BuildAssetsItem()
-            {
-                var root = new AdvancedDropdownItem("Assets");
-                var count = 0;
-
-                foreach (var assetPath in InterfaceAssetCache.Instance.GetPaths(interfaceType))
-                {
-                    var item = new InterfaceDropdownItem(assetPath)
-                    {
-                        icon = AssetDatabase.GetCachedIcon(assetPath) as Texture2D
-                    };
-                    root.AddChild(item);
-                    count++;
-                }
-
-                root.enabled = count > 0;
-                return root;
-            }
-
-            private AdvancedDropdownItem BuildSceneItem()
-            {
-                var root = new AdvancedDropdownItem("Scene");
-                Scene scene = SceneManager.GetActiveScene();
-                var rootGameObjects = scene.GetRootGameObjects();
-
-                var count = 0;
-                foreach (GameObject gameObject in rootGameObjects)
-                {
-                    var components = gameObject.GetComponentsInChildren(interfaceType, true);
-                    foreach (Component component in components)
-                    {
-                        var item = new SceneRefDropdownItem(component)
-                        {
-                            icon = EditorGUIUtility.ObjectContent(component, interfaceType).image as Texture2D
-                        };
-                        root.AddChild(item);
-                        count++;
-                    }
-                }
-
-                root.enabled = count > 0;
-                return root;
-            }
-
-            protected override void ItemSelected(AdvancedDropdownItem item)
-            {
-                if (item is InterfaceDropdownItem dropdownItem)
-                {
-                    if (dropdownItem.AssetPath == "None")
-                    {
-                        property.objectReferenceValue = null;
-                        property.serializedObject.ApplyModifiedProperties();
-                        return;
-                    }
-
-                    property.objectReferenceValue = AssetDatabase.LoadMainAssetAtPath(dropdownItem.AssetPath);
-                    property.serializedObject.ApplyModifiedProperties();
-                }
-                else if (item is SceneRefDropdownItem sceneRefItem)
-                {
-                    if (sceneRefItem.Object == null)
-                    {
-                        property.objectReferenceValue = null;
-                        property.serializedObject.ApplyModifiedProperties();
-                        return;
-                    }
-
-                    property.objectReferenceValue = sceneRefItem.Object;
-                    property.serializedObject.ApplyModifiedProperties();
-                }
-            }
-
-            private string GetTypeName(Type type)
-            {
-                if (type.IsGenericType)
-                {
-                    Type genericType = type.GetGenericTypeDefinition();
-                    var name = genericType.Name;
-                    var components = genericType.Name.Split('`');
-                    if (components.Length > 1) name = components[0];
-                    return $"{name}<{string.Join(", ", type.GenericTypeArguments.Select(GetTypeName))}>";
-                }
-
-                return type.Name;
-            }
-
-            private class InterfaceDropdownItem : AdvancedDropdownItem
-            {
-                public string AssetPath { get; }
-
-                public InterfaceDropdownItem(string path) : base(Path.GetFileNameWithoutExtension(path))
-                {
-                    AssetPath = path;
-                }
-            }
-
-            private class SceneRefDropdownItem : AdvancedDropdownItem
-            {
-                public Object Object { get; }
-
-                public SceneRefDropdownItem(Object obj) : base(obj.name)
-                {
-                    Object = obj;
-                }
-            }
-        }
-
         private SerializedProperty valueProperty;
-        private InterfaceDropdown dropdown;
+        private FuzzyMenu<string> fuzzyMenu;
         private Type objectType;
         private Type interfaceType;
         private Rect objectFieldRect;
@@ -195,9 +69,42 @@ namespace StackMedia.Scriptables.Editor
         {
             ResolveInterfaceArgs();
             valueProperty ??= property.FindPropertyRelative("value");
-            dropdown ??= new InterfaceDropdown(new AdvancedDropdownState(), interfaceType, valueProperty);
         }
 
+        private FuzzyMenuItem<string> BuildRoot()
+        {
+            var root = new FuzzyMenuItem<string>(interfaceType.Name);
+            /*foreach (var assetPath in InterfaceAssetCache.Instance.GetPaths(interfaceType))
+            {
+                var item = new FuzzyMenuItem<Object>(assetPath)
+                {
+                    Icon = AssetDatabase.GetCachedIcon(assetPath) as Texture2D
+                };
+                root.AddChild(item);
+            }*/
+            
+           
+
+            var noneItem = root.AddChild("None");
+            noneItem.UserData = null;
+
+            var assetsGroupItem = root.AddChild("Assets");
+            assetsGroupItem.AddChild("WELP");
+
+            foreach (var path in InterfaceAssetCache.instance.GetPaths(interfaceType))
+            {
+                var assetName = Path.GetFileNameWithoutExtension(path);
+
+                var item = new FuzzyMenuItem<string>(assetName)
+                {
+                    Icon = AssetDatabase.GetCachedIcon(path) as Texture2D,
+                    UserData = path
+                };
+                assetsGroupItem.AddChild(item);
+            }
+
+            return root;
+        }
 
         private Rect DrawLabel(Rect position, string label)
         {
@@ -207,8 +114,6 @@ namespace StackMedia.Scriptables.Editor
             return new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight);
         }
 
-        private DropdownWindow drop;
-        
         private void DrawObjectField(Rect position)
         {
             if (Event.current.type == EventType.Repaint)
@@ -231,11 +136,22 @@ namespace StackMedia.Scriptables.Editor
             buttonRect.yMax -= 1;
             if (GUI.Button(buttonRect, string.Empty, "objectFieldButton"))
             {
-                drop = ScriptableObject.CreateInstance<DropdownWindow>();
-                var size = position.size;
-                size.y += 250;
-                drop.ShowAsDropDown(GUIUtility.GUIToScreenRect(position), size);
-                // dropdown = new InterfaceDropdown(new AdvancedDropdownState(), interfaceType, valueProperty);
+                fuzzyMenu = new FuzzyMenu<string>(BuildRoot());
+                fuzzyMenu.OnItemSelected = (item) =>
+                {
+                    if (string.IsNullOrEmpty(item))
+                    {
+                        valueProperty.objectReferenceValue = null;
+                        valueProperty.serializedObject.ApplyModifiedProperties();
+                        return;
+                    }
+
+                    valueProperty.objectReferenceValue = AssetDatabase.LoadMainAssetAtPath(item);
+                    valueProperty.serializedObject.ApplyModifiedProperties();
+                };
+                fuzzyMenu.Show(GUIUtility.GUIToScreenRect(position));
+
+                //dropdown = new InterfaceDropdown(new AdvancedDropdownState(), interfaceType, valueProperty);
                 //dropdown.Show(position);
             }
         }

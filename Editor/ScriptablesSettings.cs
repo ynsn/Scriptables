@@ -8,23 +8,23 @@ using UnityEngine;
 namespace StackMedia.Scriptables.Editor
 {
     [FilePath("ProjectSettings/ScriptablesSettings.asset", FilePathAttribute.Location.ProjectFolder)]
-    public class ScriptablesSettings : ScriptableSingleton<ScriptablesSettings>
+    public class ScriptablesSettings : UnityEditor.ScriptableSingleton<ScriptablesSettings>
     {
-        [SerializeField] private string typeInstancesFolder = "Scriptables.Generated~/";
+        [SerializeField] private string artifactsAssetFolder = "Scriptables.Generated~/";
         
-        [SerializeField] private bool generateAssemblyDefinition = true;
+        //[SerializeField] private bool generateAssemblyDefinition = true;
 
-        [SerializeField] private string assemblyDefinitionName = "StackMedia.Scriptables.Generated";
+       // [SerializeField] private string assemblyDefinitionName = "StackMedia.Scriptables.Generated";
         
         [SerializeField] private string typeInstancesNamespace = "StackMedia.Scriptables.Generated";
 
-        public string CodeGenerationO
+        public string ArtifactsAssetFolder
         {
-            get => typeInstancesFolder;
+            get => artifactsAssetFolder;
 
             set
             {
-                typeInstancesFolder = value;
+                artifactsAssetFolder = value;
                 Save();
             }
         }
@@ -60,11 +60,6 @@ namespace StackMedia.Scriptables.Editor
         internal SerializedObject GetSerializedObject()
         {
             return new SerializedObject(this);
-        }
-
-        private void EnsureValidFileSystem()
-        {
-            
         }
     }
 }

@@ -4,18 +4,17 @@ using UnityEngine;
 namespace StackMedia.Scriptables
 {
     [Serializable]
-    [GenericOrAbstractType]
-    //[CreateAssetMenu]
-    public abstract class ScriptableEvent<T> : ScriptableEventBase, IEvent<T>
+    public abstract class ScriptableEvent<T> : Scriptable, IObservable<T>, INotifier<T>
     {
         protected delegate void EventDelegate(T arg1);
 
         protected event EventDelegate Event = delegate { };
 
-        public void Invoke(T arg1) => Event.Invoke(arg1);
+        [ExposeMethod]
+        public void Notify(T arg1) => Event.Invoke(arg1);
 
-        public void AddListener(IEventListener<T> listener) => Event += listener.Raise;
+        public void Subscribe(IObserver<T> listener) => Event += listener.Notified;
 
-        public void RemoveListener(IEventListener<T> listener) => Event -= listener.Raise;
+        public void Unsubscribe(IObserver<T> listener) => Event -= listener.Notified;
     }
 }

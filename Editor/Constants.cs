@@ -6,6 +6,8 @@
         {
             public const string PackageRoot = "Packages/nl.stackmedia.scriptables/";
             public const string PackageEditor = PackageRoot + "Editor/";
+            public const string PackageScriptTemplates = PackageEditor + "Templates/";
+            
             public const string PackageRuntime = PackageRoot + "Runtime/";
         }
         

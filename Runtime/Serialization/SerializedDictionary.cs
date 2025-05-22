@@ -105,6 +105,7 @@ namespace StackMedia.Scriptables
         public void Add(KeyValuePair<TKey, TValue> item) => (dictionary as IDictionary<TKey, TValue>).Add(item);
         public void Clear() => (dictionary as IDictionary<TKey, TValue>).Clear();
         public bool Contains(KeyValuePair<TKey, TValue> item) => (dictionary as IDictionary<TKey, TValue>).Contains(item);
+        
         public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) => (dictionary as IDictionary<TKey, TValue>).CopyTo(array, arrayIndex);
         public bool Remove(KeyValuePair<TKey, TValue> item) => (dictionary as IDictionary<TKey, TValue>).Remove(item);
 

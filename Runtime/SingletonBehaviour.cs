@@ -12,6 +12,8 @@ namespace StackMedia.Scriptables
         /// Holds the instance of the singleton or null.
         /// </summary>
         private static T instance;
+        
+        [SerializeField] private bool persistentAcrossScenes = true;
 
         /// <summary>
         /// Ensures that the instance of the singleton is created and returns it.
@@ -47,6 +49,7 @@ namespace StackMedia.Scriptables
         {
             if (!Application.isPlaying) return;
             instance = this as T;
+            if (persistentAcrossScenes) DontDestroyOnLoad(instance);
         }
     }
 }

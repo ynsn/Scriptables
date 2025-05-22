@@ -1,6 +1,0 @@
-<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
-    <engine:VisualElement name="dropdown-container" style="flex-grow: 1; border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-left-color: rgba(0, 0, 0, 0.39); border-right-color: rgba(0, 0, 0, 0.39); border-top-color: rgba(0, 0, 0, 0.39); border-bottom-color: rgba(0, 0, 0, 0.39); translate: 0 0;">
-        <editor:ToolbarSearchField placeholder-text="Search" name="search" style="width: auto; padding-top: 0; margin-top: 4px; margin-bottom: 4px;" />
-        <engine:VisualElement name="panel-container" style="flex-grow: 1;" />
-    </engine:VisualElement>
-</engine:UXML>

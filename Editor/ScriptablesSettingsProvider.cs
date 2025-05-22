@@ -19,7 +19,7 @@ namespace StackMedia.Scriptables.Editor
             EditorGUILayout.Separator();
 
             EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("typeInstancesFolder"), new GUIContent("Type Instances Folder"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("artifactsAssetFolder"), new GUIContent("Artifact Assets Folder"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("typeInstancesNamespace"), new GUIContent("Type Instances Namespace"));
             if (!EditorGUI.EndChangeCheck())
                 return;

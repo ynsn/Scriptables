@@ -95,7 +95,15 @@ namespace StackMedia.Scriptables
         {
             type = null;
         }
+        
+        public SerializedType() {}
 
+        public SerializedType(Type type)
+        {
+            Assert.IsNotNull(type, "Type cannot be null");
+            Type = type;
+        }
+        
         public static implicit operator Type(SerializedType serializedType) => serializedType.Type;
         public static implicit operator SerializedType(Type type) => new SerializedType { Type = type };
 

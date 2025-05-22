@@ -1,0 +1,9 @@
+<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <engine:VisualElement style="flex-grow: 1;">
+        <editor:Toolbar style="margin-bottom: 8px; padding-bottom: 4px; height: auto; padding-top: 0; justify-content: flex-end; padding-right: 4px; padding-left: 4px; align-items: center;">
+            <engine:TextField placeholder-text="Comment" multiline="true" name="textfield-comment" style="flex-grow: 1; margin-right: 8px;" />
+            <editor:ToolbarMenu text="Menu" selectable="false" name="toolbar-menu" style="flex-grow: 0; flex-shrink: 0; border-right-width: 0; border-left-width: 0; margin-right: 4px; align-self: flex-end; padding-bottom: 1px; margin-bottom: 2px;" />
+        </editor:Toolbar>
+        <engine:VisualElement name="property-container" style="flex-grow: 1;" />
+    </engine:VisualElement>
+</engine:UXML>

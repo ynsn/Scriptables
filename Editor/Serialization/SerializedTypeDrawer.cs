@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using StackMedia.Scriptables.Editor.UI;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace StackMedia.Scriptables.Editor
 {
@@ -100,6 +102,108 @@ namespace StackMedia.Scriptables.Editor
         private AdvancedTypeDropdown dropdown;
         private SerializedProperty currentProperty;
 
+        private FuzzyMenu<Type> fuzzyMenu;
+
+        /*protected FuzzyMenuItem<Type> BuildRoot()
+        {
+            var root = new FuzzyMenuItem<Type>("Types");
+
+            var noneItem = new FuzzyMenuItem<Type>("[None]");
+            root.AddChild(noneItem);
+
+            var tree = new Dictionary<string, FuzzyMenuItem<Type>>();
+            var types = GetAvailableTypes();
+
+            foreach (Type type in types.OrderBy(t => t.FullName))
+            {
+                var path = type.Namespace ?? "Global";
+                AddTypeToNamespaceTree(root, tree, path, type);
+            }
+
+            return root;
+        }
+
+        private void AddTypeToNamespaceTree(FuzzyMenuItem<Type> root, Dictionary<string, FuzzyMenuItem<Type>> tree, string namespacePAth, Type type)
+        {
+            var parts = namespacePAth.Split('.');
+            var currentPath = "";
+            FuzzyMenuItem<Type> currentParent = root;
+
+            foreach (var part in parts)
+            {
+                currentPath = string.IsNullOrEmpty(currentPath) ? part : currentPath + "." + part;
+
+                if (!tree.TryGetValue(currentPath, out FuzzyMenuItem<Type> item))
+                {
+                    item = new FuzzyMenuItem<Type>(part)
+                    {
+                       
+                    };
+                    tree[currentPath] = item;
+                    currentParent.AddChild(item);
+                }
+
+                currentParent = item;
+            }
+
+            var typeItem = new FuzzyMenuItem<Type>(type.Name + $" ({type.Namespace})");
+            typeItem.UserData = type;
+           // if (typeof(Object).IsAssignableFrom(type))
+           //{
+                typeItem.Icon = EditorGUIUtility.ObjectContent(null, type).image;
+           // }
+            currentParent.AddChild(typeItem);
+        }*/
+        
+        protected FuzzyMenuItem<Type> BuildRoot()
+        {
+            var root = new FuzzyMenuItem<Type>("Types");
+
+            var noneItem = new FuzzyMenuItem<Type>("[None]");
+            root.AddChild(noneItem);
+
+            var tree = new Dictionary<string, FuzzyMenuItem<Type>>();
+            var types = GetAvailableTypes();
+
+            foreach (Type type in types.OrderBy(t => t.FullName))
+            {
+                var path = type.Namespace ?? "Global";
+                AddTypeToNamespaceTree(root, tree, path, type);
+            }
+
+            return root;
+        }
+        
+        // Items are built lazily (children are created on demand, when PopulateChildren is called)
+        private void AddTypeToNamespaceTree(FuzzyMenuItem<Type> root, Dictionary<string, FuzzyMenuItem<Type>> tree, string namespacePAth, Type type)
+        {
+            var parts = namespacePAth.Split('.');
+            var currentPath = "";
+            FuzzyMenuItem<Type> currentParent = root;
+
+            foreach (var part in parts)
+            {
+                currentPath = string.IsNullOrEmpty(currentPath) ? part : currentPath + "." + part;
+
+                if (!tree.TryGetValue(currentPath, out FuzzyMenuItem<Type> item))
+                {
+                    item = new FuzzyMenuItem<Type>(part);
+                    tree[currentPath] = item;
+                    currentParent.AddChild(item);
+                }
+
+                currentParent = item;
+            }
+
+            var typeItem = new FuzzyMenuItem<Type>(type.Name + $" ({type.Namespace})");
+            typeItem.UserData = type;
+            // if (typeof(Object).IsAssignableFrom(type))
+            //{
+            typeItem.Icon = EditorGUIUtility.ObjectContent(null, type).image;
+            // }
+            currentParent.AddChild(typeItem);
+        }
+
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             currentProperty = property;
@@ -115,8 +219,11 @@ namespace StackMedia.Scriptables.Editor
 
             if (EditorGUI.DropdownButton(buttonRect, new GUIContent(currentType), FocusType.Passive))
             {
-                dropdown = new AdvancedTypeDropdown(new AdvancedDropdownState(), GetAvailableTypes(), OnTypeSelected);
-                dropdown.Show(buttonRect);
+                //dropdown = new AdvancedTypeDropdown(new AdvancedDropdownState(), GetAvailableTypes(), OnTypeSelected);
+                //dropdown.Show(buttonRect);
+                fuzzyMenu = new FuzzyMenu<Type>(BuildRoot());
+                fuzzyMenu.OnItemSelected = OnTypeSelected;
+                fuzzyMenu.Show(GUIUtility.GUIToScreenRect(buttonRect));
             }
         }
 
@@ -135,21 +242,27 @@ namespace StackMedia.Scriptables.Editor
 
         private List<Type> GetAvailableTypes()
         {
-            var ubst = InterfaceAssetCache.Instance;
-            var derivedFromAttribute = (DerivedFromAttribute)Attribute.GetCustomAttribute(fieldInfo, typeof(DerivedFromAttribute));
-            var typePropertiesAttribute = (TypePropertiesAttribute)Attribute.GetCustomAttribute(fieldInfo, typeof(TypePropertiesAttribute));
+            //  var ubst = InterfaceAssetCache.Instance;
+            //  var derivedFromAttribute = (DerivedFromAttribute)Attribute.GetCustomAttribute(fieldInfo, typeof(DerivedFromAttribute));
+            //   var typePropertiesAttribute = (TypePropertiesAttribute)Attribute.GetCustomAttribute(fieldInfo, typeof(TypePropertiesAttribute));
 
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(assembly => assembly.GetTypes())
-                .Where(derivedFromAttribute != null ? derivedFromAttribute.Predicate : (_) => true)
-                .Where(typePropertiesAttribute != null ? typePropertiesAttribute.Predicate : (_) => true)
-                .ToArray();
+            //  var assemblies = AppDomain.CurrentDomain.GetAssemblies()
+            //      .SelectMany(assembly => assembly.GetTypes())
+            //  .Where(derivedFromAttribute != null ? derivedFromAttribute.Predicate : (_) => true)
+            //   .Where(typePropertiesAttribute != null ? typePropertiesAttribute.Predicate : (_) => true)
+            //   .ToArray();
 
-            var types = assemblies
+            // var types = assemblies;
+            // .Where(type => type.IsPublic)
+            //   .ToList();
+
+            //return types/*.OrderBy(t => t.FullName)*/.ToList();
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var types = assemblies.SelectMany(assembly => assembly.GetTypes())
                 .Where(type => type.IsPublic)
                 .ToList();
 
-            return types.OrderBy(t => t.FullName).ToList();
+            return types;
         }
     }
 }
