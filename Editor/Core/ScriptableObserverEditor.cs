@@ -9,12 +9,13 @@ namespace StackMedia.Scriptables.Editor
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
+
+            EditorGUILayout.Space();
             DrawPropertiesExcluding(serializedObject, "m_Script");
 
-            if (GUI.changed)
-            {
-                serializedObject.ApplyModifiedProperties();
-            }
+            if (!GUI.changed) return;
+            serializedObject.ApplyModifiedProperties();
+            EditorUtility.SetDirty(target);
         }
     }
 }
