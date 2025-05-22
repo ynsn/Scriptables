@@ -4,61 +4,59 @@ using UnityEngine.Events;
 namespace StackMedia.Scriptables
 {
     /// <summary>
-    /// Provides a base class for components that observe scriptable events with a typed payload and respond via UnityEvents.
+    /// Provides a concrete implementation of <see cref="ObserverBehaviour{T}"/> that invokes a typed UnityEvent in response to notifications.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// This abstract generic class implements the <see cref="IObserver{T}"/> interface, allowing it to subscribe to and receive notifications
-    /// from scriptable events that carry a value or payload of type <typeparamref name="T"/>. It is designed for use in Unity, enabling
-    /// decoupled event-driven communication between ScriptableObjects and MonoBehaviour components with type safety.
+    /// This abstract class extends <see cref="ObserverBehaviour{T}"/> to add Unity event system integration, allowing
+    /// designers to configure responses to typed scriptable events directly in the Unity Inspector. When the observer
+    /// receives a notification with a payload of type <typeparamref name="T"/>, it automatically invokes the assigned
+    /// UnityEvent, passing along the payload data.
     /// </para>
     /// <para>
-    /// The observer subscribes to the specified <see cref="IObservable{T}"/> event when enabled, and unsubscribes when disabled.
-    /// When notified with a payload, it invokes the assigned <see cref="UnityEvent{T}"/> response with that payload, allowing designers
-    /// to configure type-safe reactions in the Unity Inspector.
+    /// ScriptableObserver&lt;T&gt; bridges the gap between the observer pattern and Unity's component-based design by
+    /// exposing event responses as inspector-configurable actions. This approach enables non-programmers to create
+    /// event-driven behaviors without writing code, while maintaining the architectural benefits of decoupled event systems
+    /// and providing type safety for event data.
     /// </para>
     /// <para>
-    /// For observing scriptable events that broadcast notifications without a value or payload, see <see cref="ScriptableObserver"/>.
+    /// While this class is abstract, it provides a complete implementation of the notification handling, so derived classes
+    /// typically don't need to override the <see cref="Notified(T)"/> method unless they need to add custom behavior
+    /// beyond invoking the UnityEvent.
+    /// </para>
+    /// <para>
+    /// For observers that need to handle events without typed payloads, see <see cref="ScriptableObserver"/>.
     /// </para>
     /// </remarks>
     /// <typeparam name="T">The type of the payload that this observer can receive and process.</typeparam>
-    public abstract class ScriptableObserver<T> : ScriptableObserverBehaviour, IObserver<T>
+    public abstract class ScriptableObserver<T> : ObserverBehaviour<T>
     {
         /// <summary>
-        /// The reference to the scriptable event to observe. Must implement <see cref="IObservable{T}"/> with the same type parameter.
+        /// The typed UnityEvent to invoke when this observer receives a notification.
         /// </summary>
-        [SerializeField] private InterfaceReference<IObservable<T>> scriptableEvent;
-
-        /// <summary>
-        /// The UnityEvent to invoke in response to the scriptable event notification, passing the received payload as an argument.
-        /// </summary>
+        /// <remarks>
+        /// This field is serialized and exposed in the inspector, allowing designers to configure
+        /// event responses without coding. The event is invoked whenever the <see cref="Notified(T)"/> method
+        /// is called by the observed event, with the payload passed as an argument to all event handlers.
+        /// Multiple actions can be assigned to this event in the inspector, enabling complex reaction chains
+        /// to a single event notification with access to the event data.
+        /// </remarks>
         [SerializeField] private UnityEvent<T> response = new UnityEvent<T>();
 
         /// <summary>
-        /// Subscribes this observer to the scriptable event when the component is enabled.
-        /// </summary>
-        protected virtual void OnEnable() => scriptableEvent?.Interface?.Subscribe(this);
-
-        /// <summary>
-        /// Unsubscribes this observer from the scriptable event when the component is disabled.
-        /// </summary>
-        protected virtual void OnDisable() => scriptableEvent?.Interface?.Unsubscribe(this);
-
-        /// <summary>
-        /// Called by the scriptable event to notify this observer that the event has occurred, providing the event payload.
-        /// Invokes the configured UnityEvent response with the received payload and optionally disables the component.
+        /// Called by the observable to notify this observer that the event has occurred, providing the event payload.
         /// </summary>
         /// <param name="arg">The payload or data associated with the event notification.</param>
-        public void Notified(T arg)
+        /// <remarks>
+        /// This override implements the notification handling by invoking the <see cref="response"/> UnityEvent
+        /// with the provided argument. When the observed event is triggered, this method is called with the event data,
+        /// which in turn is passed to all the actions that have been assigned to the response event in the inspector.
+        /// This provides a visual, designer-friendly way to configure reactions to events while maintaining
+        /// type safety for the event data.
+        /// </remarks>
+        public override void Notified(T arg)
         {
-#if UNITY_EDITOR
-            if (DebugEnabled)
-            {
-                Debug.Log("Invoked", this);
-            }
-#endif
             response.Invoke(arg);
-            if (DisableOnNotifier) enabled = false;
         }
     }
 }
