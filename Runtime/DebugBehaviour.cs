@@ -11,5 +11,11 @@ namespace StackMedia.Scriptables
         [SerializeField] private bool logWarningEnabled;
 
         [SerializeField] private bool logErrorEnabled;
+
+        public bool LogEnabled => logEnabled;
+
+        public bool LogWarningEnabled => logWarningEnabled;
+
+        public bool LogErrorEnabled => logErrorEnabled;
     }
 }
